@@ -1,16 +1,23 @@
 import React from "react";
 
 const statusColors = {
-  "En attente d'affectation": "yellow",
-  "Assignée au livreur": "blue",
-  "En cours de retrait": "orange",
-  "Récupérée": "purple",
-  "Livrée": "green",
-  "Annulée": "red",
+  "En attente": "warning",
+  "Assignée": "info",
+  "En cours de retrait": "warning",
+  "Récupérée": "info",
+  "Livrée": "success",
+  "Annulée": "danger",
+  "En attente d'affectation": "warning",
+  "Assignée au livreur": "info"
 };
 
-const StatusBadge = ({ status }) => (
-  <span className={`badge badge-${statusColors[status]}`}>{status}</span>
-);
+const StatusBadge = ({ status }) => {
+  const color = statusColors[status] || "secondary";
+  return (
+    <span className={`badge badge-${color}`}>
+      {status}
+    </span>
+  );
+};
 
 export default StatusBadge;

@@ -1,11 +1,10 @@
-import React, { useState, useContext } from "react";
+import React, { useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { login as loginService } from "../../services/authService";
+import { login as loginService, getMe } from "../../services/authService";
 import { AuthContext } from "../../context/AuthContext";
 import { useLoading } from "../../context/LoadingContext";
 import { useError } from "../../context/ErrorContext";
 import { useValidation } from "../../utils/validation";
-import { LoadingSpinner } from "../../components/Common/Loading";
 import "./Auth.css";
 
 const Login = () => {
@@ -23,109 +22,176 @@ const Login = () => {
     validateAll,
     isValid
   } = useValidation(
-    { email: '', password: '' },
-    { email: true, password: true }
+    { email: "", password: "" },
+    {
+      email: {
+        required: true,
+        validate: (val) =>
+          /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
+        message: "Email invalide"
+      },
+      password: {
+        required: true,
+        message: "Mot de passe requis"
+      }
+    }
   );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateAll()) {
-      return;
-    }
 
-    setLoading('login', true);
-    
+    if (!validateAll()) return;
+
+    setLoading("login", true);
+
     try {
-      const response = await loginService(formData);
-      
-      // Store token and user data
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      
-      login(response.data.user);
-      handleSuccess('Login successful!');
-      
-      // Redirect based on role
-      const role = response.data.user?.role;
-      if (role === "admin") {
-        navigate("/admin/dashboard");
-      } else if (role === "livreur") {
-        navigate("/livreur/dashboard");
-      } else {
-        navigate("/client/dashboard");
+      console.log("📝 Tentative de connexion:", formData.email);
+
+      // 🔥 ÉTAPE 1: Appeler le service de connexion
+      const loginResult = await loginService(formData);
+      console.log("✅ Réponse login:", loginResult);
+
+      // Vérifier que le token a été reçu
+      if (!loginResult?.token) {
+        throw new Error("⚠️ Token non reçu du serveur");
       }
+
+      // Token déjà stocké par loginService(), on peut juste récupérer les données
+      const user = loginResult?.user;
+
+      if (!user) {
+        // Si le token a été reçu mais pas les données utilisateur du login
+        // Essayer d'obtenir les données via getMe()
+        console.log("📍 Token reçu, essai d'obtenir les données utilisateur via getMe()...");
+        const meResult = await getMe();
+        if (!meResult) {
+          throw new Error("⚠️ Impossible de récupérer les données utilisateur");
+        }
+        login(meResult);
+      } else {
+        // Les données utilisateur sont déjà dans la réponse de login
+        login(user);
+      }
+
+      handleSuccess("✅ Connexion réussie!");
+
+      // 🔥 ÉTAPE 3: Redirection selon le rôle
+      const userRole = user?.role || loginResult?.user?.role;
+      console.log("👤 Rôle utilisateur:", userRole);
+
+      if (userRole === "admin") {
+        navigate("/admin/dashboard");
+      } else if (userRole === "livreur") {
+        navigate("/livreur/dashboard");
+      } else if (userRole === "client") {
+        navigate("/client/dashboard");
+      } else {
+        throw new Error("⚠️ Rôle utilisateur non reconnu: " + userRole);
+      }
+
     } catch (err) {
-      handleApiError(err);
+      console.error("❌ Erreur connexion:", err);
+      
+      // Afficher un message d'erreur clair
+      if (err.response?.status === 404) {
+        handleApiError({ 
+          response: { 
+            data: { message: "🔍 Utilisateur non trouvé. Vérifiez votre email." }
+          }
+        });
+      } else if (err.response?.status === 401) {
+        handleApiError({ 
+          response: { 
+            data: { message: "🔐 Mot de passe incorrect." }
+          }
+        });
+      } else if (err.response?.status === 403) {
+        handleApiError({ 
+          response: { 
+            data: { message: "🚫 Compte désactivé. Contactez l'administrateur." }
+          }
+        });
+      } else {
+        handleApiError(err);
+      }
     } finally {
-      setLoading('login', false);
+      setLoading("login", false);
     }
-  };
-
-  const handleInputChange = (field, value) => {
-    setFieldValue(field, value);
-  };
-
-  const handleInputBlur = (field) => {
-    setFieldTouched(field);
   };
 
   return (
     <div className="auth-container">
-      <div className="auth-card">
-        <div className="auth-header">
-          <h1>Delivery System</h1>
-          <h2>Connexion</h2>
-          <p>Connectez-vous à votre compte</p>
+      <div className="card">
+        <div className="card-header">
+          <h1 className="title">Delivery System</h1>
+          <h2 className="subtitle">Connexion</h2>
+          <p className="text-body">Connectez-vous à votre compte</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="auth-form">
+        <form onSubmit={handleSubmit} className="mt-lg">
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label className="form-label">Email</label>
             <input
-              id="email"
               type="email"
               value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
-              onBlur={() => handleInputBlur('email')}
-              className={`form-input ${touched.email && errors.email ? 'error' : ''}`}
+              onChange={(e) =>
+                setFieldValue("email", e.target.value)
+              }
+              onBlur={() => setFieldTouched("email")}
+              className={`form-input ${
+                touched.email && errors.email ? "error" : ""
+              }`}
               placeholder="Entrez votre email"
-              disabled={isLoading('login')}
+              disabled={isLoading("login")}
             />
             {touched.email && errors.email && (
-              <span className="error-message">{errors.email}</span>
+              <span className="error-message">
+                {errors.email}
+              </span>
             )}
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Mot de passe</label>
+            <label className="form-label">Mot de passe</label>
             <input
-              id="password"
               type="password"
               value={formData.password}
-              onChange={(e) => handleInputChange('password', e.target.value)}
-              onBlur={() => handleInputBlur('password')}
-              className={`form-input ${touched.password && errors.password ? 'error' : ''}`}
+              onChange={(e) =>
+                setFieldValue("password", e.target.value)
+              }
+              onBlur={() => setFieldTouched("password")}
+              className={`form-input ${
+                touched.password && errors.password
+                  ? "error"
+                  : ""
+              }`}
               placeholder="Entrez votre mot de passe"
-              disabled={isLoading('login')}
+              disabled={isLoading("login")}
             />
             {touched.password && errors.password && (
-              <span className="error-message">{errors.password}</span>
+              <span className="error-message">
+                {errors.password}
+              </span>
             )}
           </div>
 
-          <button 
-            type="submit" 
-            className="auth-button"
-            disabled={!isValid || isLoading('login')}
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={!isValid || isLoading("login")}
           >
-            {isLoading('login') ? <LoadingSpinner size="small" /> : 'Se connecter'}
+            {isLoading("login")
+              ? "Chargement..."
+              : "Se connecter"}
           </button>
         </form>
 
-        <div className="auth-footer">
-          <p>
-            Pas encore de compte? <Link to="/register" className="auth-link">S'inscrire</Link>
+        <div className="mt-lg text-center">
+          <p className="text-body">
+            Pas encore de compte ?{" "}
+            <Link to="/register" className="btn btn-outline">
+              S'inscrire
+            </Link>
           </p>
         </div>
       </div>
@@ -134,4 +200,3 @@ const Login = () => {
 };
 
 export default Login;
-

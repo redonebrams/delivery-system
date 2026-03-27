@@ -6,7 +6,8 @@ export const validateEmail = (email) => {
 };
 
 export const validatePhone = (phone) => {
-  const phoneRegex = /^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/;
+  // Moroccan phone format: 06/07 followed by 8 digits
+  const phoneRegex = /^(06|07)\d{8}$/;
   return phoneRegex.test(phone.replace(/\s/g, ''));
 };
 
@@ -65,7 +66,7 @@ export const validationRules = {
   telephone: {
     required: true,
     validate: validatePhone,
-    message: 'Please enter a valid phone number'
+    message: 'Please enter a valid Moroccan phone number (06/07XXXXXXXX)'
   },
   address: {
     required: true,
@@ -138,7 +139,7 @@ export const useValidation = (initialData, rules) => {
   const [errors, setErrors] = React.useState({});
   const [touched, setTouched] = React.useState({});
 
-  const validateField = React.useCallback((name, value) => {
+  const validateFieldInternal = React.useCallback((name, value) => {
     const validation = validateField(name, value, formData);
     setErrors(prev => ({
       ...prev,
@@ -155,9 +156,9 @@ export const useValidation = (initialData, rules) => {
     
     // Validate field if it has been touched
     if (touched[name]) {
-      validateField(name, value);
+      validateFieldInternal(name, value);
     }
-  }, [touched, validateField]);
+  }, [touched, validateFieldInternal]);
 
   const setFieldTouched = React.useCallback((name) => {
     setTouched(prev => ({
@@ -166,8 +167,8 @@ export const useValidation = (initialData, rules) => {
     }));
     
     // Validate field when touched
-    validateField(name, formData[name]);
-  }, [formData, validateField]);
+    validateFieldInternal(name, formData[name]);
+  }, [formData, validateFieldInternal]);
 
   const validateAll = React.useCallback(() => {
     const { isValid, errors: validationErrors } = validateForm(formData, rules);
@@ -182,14 +183,43 @@ export const useValidation = (initialData, rules) => {
     setTouched({});
   }, [initialData]);
 
+  // Calculate isValid based on current form data and rules
+  const currentValidation = React.useMemo(() => {
+    const errors = {};
+    let isValid = true;
+    
+    Object.keys(rules).forEach(fieldName => {
+      const fieldValue = formData[fieldName];
+      const validation = validateField(fieldName, fieldValue, formData);
+      
+      if (!validation.isValid) {
+        errors[fieldName] = validation.error;
+        isValid = false;
+      }
+    });
+    
+    return { isValid, errors };
+  }, [formData, rules]);
+
+  // For UI errors, only show touched fields
+  const displayErrors = React.useMemo(() => {
+    const displayErrors = {};
+    Object.keys(touched).forEach(fieldName => {
+      if (touched[fieldName] && currentValidation.errors[fieldName]) {
+        displayErrors[fieldName] = currentValidation.errors[fieldName];
+      }
+    });
+    return displayErrors;
+  }, [touched, currentValidation.errors]);
+
   return {
     formData,
-    errors,
+    errors: displayErrors,
     touched,
     setFieldValue,
     setFieldTouched,
     validateAll,
     resetForm,
-    isValid: Object.keys(errors).length === 0
+    isValid: currentValidation.isValid
   };
 };
