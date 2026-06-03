@@ -5,24 +5,24 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 
 const AdminLayout = ({ children, title }) => {
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f8fafc" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#f8fafc", width: "100%" }}>
       <AdminSidebar />
       <div
-        className="flex-grow-1 d-flex flex-column"
+        className="flex-grow-1 d-flex flex-column page-container"
         style={{
-          paddingLeft: "2rem",
-          paddingRight: "2rem",
-          paddingTop: "2rem",
-          paddingBottom: "2rem",
+          paddingLeft: "1.25rem",
+          paddingRight: "1.25rem",
+          paddingTop: "1.25rem",
+          paddingBottom: "1.25rem",
         }}
       >
         {/* Header */}
         {title && (
           <div
-            className="mb-5"
+            className="mb-4"
             style={{
               borderBottom: "1px solid #e2e8f0",
-              paddingBottom: "1.5rem",
+              paddingBottom: "1.25rem",
             }}
           >
             <h1
@@ -53,10 +53,10 @@ const AdminLayout = ({ children, title }) => {
 
         {/* Footer */}
         <div
-          className="mt-5 text-center"
+          className="mt-3 text-center"
           style={{
             borderTop: "1px solid #e2e8f0",
-            paddingTop: "2rem",
+            paddingTop: "1.25rem",
             color: "#64748b",
             fontSize: "0.9rem",
           }}

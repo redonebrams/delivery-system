@@ -16,6 +16,7 @@ app.use('/api/commandes', require('./routes/commandeRoutes'));
 app.use('/api/livreurs', require('./routes/livreurRoutes'));
 app.use('/api/clients', require('./routes/clientRoutes'));
 app.use('/api/stats', require('./routes/statsRoutes'));
+app.use('/api/testimonials', require('./routes/testimonialRoutes'));
 
 app.use(errorHandler);
 

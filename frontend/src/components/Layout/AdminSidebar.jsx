@@ -14,6 +14,7 @@ const AdminSidebar = () => {
     { path: "/admin/orders", label: "Commandes", icon: "bi-box-seam" },
     { path: "/admin/clients", label: "Clients", icon: "bi-people" },
     { path: "/admin/livreurs", label: "Livreurs", icon: "bi-truck" },
+    { path: "/admin/testimonials", label: "Témoignages", icon: "bi-chat-left-text" },
     { path: "/admin/settings", label: "Paramètres", icon: "bi-gear" },
   ];
 

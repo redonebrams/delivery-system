@@ -8,6 +8,8 @@ import Badge from "../../components/Common/Badge";
 import { getDeliveryById, updateOrderStatus } from "../../services/orderService";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import { BiCheck } from "react-icons/bi";
+import { FaArrowLeft, FaBox, FaSpinner } from "react-icons/fa";
 
 const DeliveryDetails = () => {
   const { id } = useParams();
@@ -54,7 +56,7 @@ const DeliveryDetails = () => {
     try {
       setLoading("updateStatus", true);
       await updateOrderStatus(id, newStatus);
-      handleSuccess("Statut mis à jour avec succès");
+      handleSuccess(<><BiCheck className="me-2" />Statut mis à jour avec succès</>);
       setShowStatusModal(false);
       fetchDelivery();
     } catch (err) {
@@ -105,7 +107,7 @@ const DeliveryDetails = () => {
         <div style={{ marginBottom: "30px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <h1 style={{ fontSize: "32px", fontWeight: "700", color: "#2c3e50", margin: 0 }}>
-              <i className="bi bi-box-seam" style={{ marginRight: "12px" }}></i>
+              <FaBox style={{ marginRight: "12px" }} />
               Détails de la livraison
             </h1>
             <p style={{ color: "#7f8c8d", marginTop: "8px", marginBottom: 0 }}>
@@ -134,7 +136,7 @@ const DeliveryDetails = () => {
               e.currentTarget.style.backgroundColor = "#ecf0f1";
             }}
           >
-            <i className="bi bi-arrow-left"></i>
+            <FaArrowLeft className="me-2" />
             Retour
           </button>
         </div>

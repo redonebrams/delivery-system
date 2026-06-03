@@ -174,7 +174,7 @@ exports.getDeliveries = async (req,res,next) => {
       return res.status(404).json(responseFormatter(false, null, 'Livreur non trouvé'));
     }
     
-    const deliveries = await Commande.findByLivreur(livreur.id);
+    const deliveries = await Commande.findByLivreur(livreur.user_id);
     res.json(responseFormatter(true, deliveries, 'Livraisons du livreur'));
   } catch(err){ next(err); }
 };
@@ -199,18 +199,18 @@ exports.getStats = async (req,res,next) => {
     const [todayResult] = await pool.query(`
       SELECT COUNT(*) as count FROM commandes 
       WHERE livreur_id = ? AND DATE(created_at) = CURDATE()
-    `, [livreur.id]);
+    `, [livreur.user_id]);
     
     // Get total deliveries
     const [totalResult] = await pool.query(`
       SELECT COUNT(*) as count FROM commandes WHERE livreur_id = ?
-    `, [livreur.id]);
+    `, [livreur.user_id]);
     
     // Get ongoing deliveries
     const [ongoingResult] = await pool.query(`
       SELECT COUNT(*) as count FROM commandes 
       WHERE livreur_id = ? AND statut IN ('assignee', 'en_retrait', 'recuperee')
-    `, [livreur.id]);
+    `, [livreur.user_id]);
     
     const stats = {
       today: todayResult[0]?.count || 0,

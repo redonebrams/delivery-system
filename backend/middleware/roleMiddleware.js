@@ -1,6 +1,12 @@
-module.exports = (roles) => (req,res,next) => {
-  if(!roles.includes(req.user.role)) {
-    return res.status(403).json({message:'Accès interdit'});
+module.exports = (roles) => (req, res, next) => {
+  const allowedRoles = Array.isArray(roles) ? roles : [roles];
+
+  if (!req.user || !allowedRoles.includes(req.user.role)) {
+    return res.status(403).json({
+      success: false,
+      message: 'Acces interdit'
+    });
   }
+
   next();
 };

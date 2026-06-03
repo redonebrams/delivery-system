@@ -6,7 +6,7 @@ import { useError } from "../../context/ErrorContext";
 import { useLoading } from "../../context/LoadingContext";
 import AdminLayout from "../../components/Layout/AdminLayout";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
+import { FaBox, FaCalendarDay, FaTruck, FaUsers, FaSpinner } from 'react-icons/fa';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -46,7 +46,7 @@ const Dashboard = () => {
     return (
       <AdminLayout title="Dashboard">
         <div className="text-center py-5">
-          <div className="spinner-border text-primary"></div>
+          <FaSpinner className="spin" size={32} color="#3C5E82" />
           <p className="mt-3 text-muted">Chargement...</p>
         </div>
       </AdminLayout>
@@ -72,30 +72,42 @@ const Dashboard = () => {
     <AdminLayout title="Dashboard">
       <div className="row g-4 mb-5">
         <div className="col-md-3">
-          <div className="card p-3">
-            <h6>Commandes</h6>
-            <h3>{stats.totalCommandes || 0}</h3>
+          <div className="card p-3 d-flex align-items-center">
+            <FaBox className="me-3" size={24} color="#3C5E82" />
+            <div>
+              <h6>Commandes</h6>
+              <h3>{stats.totalCommandes || 0}</h3>
+            </div>
           </div>
         </div>
 
         <div className="col-md-3">
-          <div className="card p-3">
-            <h6>Aujourd'hui</h6>
-            <h3>{stats.todayOrders || 0}</h3>
+          <div className="card p-3 d-flex align-items-center">
+            <FaCalendarDay className="me-3" size={24} color="#5E82AC" />
+            <div>
+              <h6>Aujourd'hui</h6>
+              <h3>{stats.todayOrders || 0}</h3>
+            </div>
           </div>
         </div>
 
         <div className="col-md-3">
-          <div className="card p-3">
-            <h6>En cours</h6>
-            <h3>{stats.ongoingOrders || 0}</h3>
+          <div className="card p-3 d-flex align-items-center">
+            <FaTruck className="me-3" size={24} color="#789ACA" />
+            <div>
+              <h6>En cours</h6>
+              <h3>{stats.ongoingOrders || 0}</h3>
+            </div>
           </div>
         </div>
 
         <div className="col-md-3">
-          <div className="card p-3">
-            <h6>Clients</h6>
-            <h3>{clients.length}</h3>
+          <div className="card p-3 d-flex align-items-center">
+            <FaUsers className="me-3" size={24} color="#82AFE5" />
+            <div>
+              <h6>Clients</h6>
+              <h3>{clients.length}</h3>
+            </div>
           </div>
         </div>
       </div>

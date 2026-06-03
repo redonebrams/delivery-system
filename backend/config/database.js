@@ -8,16 +8,10 @@ const pool = mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
-  // 🔥 Connection pool configuration
   waitForConnections: true,
-  connectionLimit: 10,        // Max 10 connections
-  queueLimit: 0,              // Unlimited queue
-  enableKeepAlive: true,       // Keep connections alive
-  keepAliveInitialDelayMs: 0,  // Initial delay
-  // 🔥 Connection timeout settings
-  acquireTimeout: 30000,      // 30s to acquire connection
-  idleTimeout: 30000,         // 30s idle timeout
-  connectionTimeout: 10000,   // 10s connection timeout
+  connectionLimit: 10,
+  queueLimit: 0,
+  connectTimeout: 10000,
 });
 
 // 🔥 Log pool status

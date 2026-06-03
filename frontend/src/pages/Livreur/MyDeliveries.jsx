@@ -1,13 +1,13 @@
-import React, { useEffect, useContext, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect, useContext } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { getMyDeliveries, updateOrderStatus } from "../../services/orderService";
 import { AuthContext } from "../../context/AuthContext";
 import { useLoading } from "../../context/LoadingContext";
 import { useError } from "../../context/ErrorContext";
+import { FaInbox, FaEye, FaHourglassHalf, FaCheck, FaBoxes, FaSearch, FaEdit, FaSpinner } from "react-icons/fa";
 import LivreurSidebar from "../../components/Layout/LivreurSidebar";
 import Badge from "../../components/Common/Badge";
-import { getMyDeliveries, updateOrderStatus } from "../../services/orderService";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
 
 const MyDeliveries = () => {
   const { user, login } = useContext(AuthContext);
@@ -119,7 +119,7 @@ const MyDeliveries = () => {
     try {
       setLoading("updateStatus", true);
       await updateOrderStatus(selectedDelivery.id, newStatus);
-      handleSuccess("Statut mis à jour avec succès");
+      handleSuccess(<><FaCheck className="me-2" />Statut mis à jour avec succès</>);
       setShowModal(false);
       fetchDeliveries();
     } catch (err) {
@@ -157,7 +157,7 @@ const MyDeliveries = () => {
         {/* Header */}
         <div style={{ marginBottom: "30px" }}>
           <h1 style={{ fontSize: "32px", fontWeight: "700", color: "#2c3e50", margin: 0 }}>
-            <i className="bi bi-boxes" style={{ marginRight: "12px" }}></i>
+            <FaBoxes className="me-3" size={28} color="#3498db" />
             Mes livraisons
           </h1>
           <p style={{ color: "#7f8c8d", marginTop: "8px", marginBottom: 0 }}>
@@ -186,7 +186,7 @@ const MyDeliveries = () => {
               gap: "10px",
             }}
           >
-            <i className="bi bi-search" style={{ color: "#7f8c8d" }}></i>
+            <FaSearch className="me-2" size={16} color="#7f8c8d" />
             <input
               type="text"
               placeholder="Rechercher par ID, client ou adresse..."
@@ -265,9 +265,7 @@ const MyDeliveries = () => {
         >
           {isLoading("deliveries") ? (
             <div style={{ textAlign: "center", padding: "40px 0" }}>
-              <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">Chargement...</span>
-              </div>
+              <FaSpinner className="spin" size={32} color="#3498db" />
             </div>
           ) : paginatedDeliveries.length === 0 ? (
             <div
@@ -278,7 +276,7 @@ const MyDeliveries = () => {
                 borderRadius: "8px",
               }}
             >
-              <i className="bi bi-inbox" style={{ fontSize: "32px", color: "#bdc3c7", marginBottom: "10px" }}></i>
+              <FaInbox size={32} color="#bdc3c7" style={{ marginBottom: "10px" }} />
               <p style={{ color: "#7f8c8d", marginTop: "10px" }}>Aucune livraison trouvée</p>
             </div>
           ) : (
@@ -346,7 +344,7 @@ const MyDeliveries = () => {
                                 e.currentTarget.style.backgroundColor = "#3498db";
                               }}
                             >
-                              <i className="bi bi-eye" style={{ marginRight: "4px" }}></i>
+                              <FaEye className="me-1" size={12} />
                               Détails
                             </Link>
                             <button
@@ -371,7 +369,7 @@ const MyDeliveries = () => {
                                 e.currentTarget.style.backgroundColor = "#27ae60";
                               }}
                             >
-                              <i className="bi bi-pencil" style={{ marginRight: "4px" }}></i>
+                              <FaEdit className="me-1" size={12} />
                               Statut
                             </button>
                           </div>
@@ -482,7 +480,7 @@ const MyDeliveries = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <h5 style={{ fontSize: "18px", fontWeight: "700", color: "#2c3e50", marginBottom: "20px" }}>
-                <i className="bi bi-pencil-square" style={{ marginRight: "8px" }}></i>
+                <FaEdit className="me-2" size={16} />
                 Changer le statut de la livraison #{selectedDelivery.id}
               </h5>
 

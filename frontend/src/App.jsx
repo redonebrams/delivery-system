@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { LoadingProvider } from "./context/LoadingContext";
 import { ErrorProvider } from "./context/ErrorContext";
+import ProtectedRoute from "./components/Common/ProtectedRoute";
 
 // Pages Auth
 import Login from "./pages/Auth/Login";
@@ -22,6 +23,7 @@ import AdminOrders from "./pages/Admin/Orders";
 import AdminClients from "./pages/Admin/Clients";
 import AdminLivreurs from "./pages/Admin/Livreurs";
 import AdminSettings from "./pages/Admin/Settings";
+import AdminTestimonials from "./pages/Admin/Testimonials";
 
 // Pages Livreur
 import LivreurDashboard from "./pages/Livreur/Dashboard";
@@ -36,7 +38,8 @@ const App = () => (
     <LoadingProvider>
       <AuthProvider>
         <BrowserRouter>
-          <Routes>
+          <div className="app-shell">
+            <Routes>
 
             {/* 🌍 Public Routes */}
             <Route path="/" element={<Home />} />
@@ -44,25 +47,125 @@ const App = () => (
             <Route path="/register" element={<Register />} />
 
             {/* 👤 Client Routes */}
-            <Route path="/client/dashboard" element={<ClientDashboard />} />
-            <Route path="/client/new-order" element={<NewOrder />} />
-            <Route path="/client/history" element={<OrderHistory />} />
-            <Route path="/client/orders/:id" element={<OrderDetails />} />
-            <Route path="/client/profile" element={<Profile />} />
+            <Route
+              path="/client/dashboard"
+              element={
+                <ProtectedRoute roles={["client"]}>
+                  <ClientDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/client/new-order"
+              element={
+                <ProtectedRoute roles={["client"]}>
+                  <NewOrder />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/client/history"
+              element={
+                <ProtectedRoute roles={["client"]}>
+                  <OrderHistory />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/client/orders/:id"
+              element={
+                <ProtectedRoute roles={["client"]}>
+                  <OrderDetails />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/client/profile"
+              element={
+                <ProtectedRoute roles={["client"]}>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
 
             {/* 🧑‍💼 Admin Routes */}
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/orders" element={<AdminOrders />} />
-            <Route path="/admin/clients" element={<AdminClients />} />
-            <Route path="/admin/livreurs" element={<AdminLivreurs />} />
-            <Route path="/admin/settings" element={<AdminSettings />} />
+            <Route
+              path="/admin/dashboard"
+              element={
+                <ProtectedRoute roles={["admin"]}>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/orders"
+              element={
+                <ProtectedRoute roles={["admin"]}>
+                  <AdminOrders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/clients"
+              element={
+                <ProtectedRoute roles={["admin"]}>
+                  <AdminClients />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/livreurs"
+              element={
+                <ProtectedRoute roles={["admin"]}>
+                  <AdminLivreurs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/settings"
+              element={
+                <ProtectedRoute roles={["admin"]}>
+                  <AdminSettings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/testimonials"
+              element={
+                <ProtectedRoute roles={["admin"]}>
+                  <AdminTestimonials />
+                </ProtectedRoute>
+              }
+            />
 
             {/* 🚴 Livreur Routes */}
-            <Route path="/livreur/dashboard" element={<LivreurDashboard />} />
-            <Route path="/livreur/deliveries" element={<MyDeliveries />} />
-            <Route path="/livreur/deliveries/:id" element={<DeliveryDetails />} />
+            <Route
+              path="/livreur/dashboard"
+              element={
+                <ProtectedRoute roles={["livreur"]}>
+                  <LivreurDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/livreur/deliveries"
+              element={
+                <ProtectedRoute roles={["livreur"]}>
+                  <MyDeliveries />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/livreur/deliveries/:id"
+              element={
+                <ProtectedRoute roles={["livreur"]}>
+                  <DeliveryDetails />
+                </ProtectedRoute>
+              }
+            />
 
           </Routes>
+          </div>
         </BrowserRouter>
       </AuthProvider>
     </LoadingProvider>

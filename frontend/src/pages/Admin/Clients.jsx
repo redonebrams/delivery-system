@@ -4,7 +4,7 @@ import { useError } from "../../context/ErrorContext";
 import { useLoading } from "../../context/LoadingContext";
 import AdminLayout from "../../components/Layout/AdminLayout";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
+import { FaUsers, FaEye, FaTrash, FaSpinner } from 'react-icons/fa';
 
 const Clients = () => {
   const { handleApiError, handleSuccess } = useError();
@@ -136,7 +136,7 @@ const Clients = () => {
     return (
       <AdminLayout title="Clients">
         <div className="text-center py-5">
-          <div className="spinner-border text-primary"></div>
+          <FaSpinner className="spin" size={32} color="#3C5E82" />
         </div>
       </AdminLayout>
     );
@@ -146,8 +146,9 @@ const Clients = () => {
     <AdminLayout title="Clients">
       <div className="container-fluid p-4">
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2>
-            <i className="bi bi-people me-2"></i>Clients
+          <h2 className="d-flex align-items-center">
+            <FaUsers className="me-2" size={24} color="#3C5E82" />
+            Clients
           </h2>
           <span className="badge bg-secondary">{filteredClients.length}</span>
         </div>
@@ -179,11 +180,13 @@ const Clients = () => {
                   <td>{client.email}</td>
                   <td>{client.telephone}</td>
                   <td>
-                    <button className="btn btn-sm btn-primary me-2" onClick={() => handleViewDetails(client.id)}>
-                      Voir
+                    <button className="btn btn-sm btn-primary me-2 d-flex align-items-center" onClick={() => handleViewDetails(client.id)}>
+                      <FaEye size={14} />
+                      <span className="ms-1">Voir</span>
                     </button>
-                    <button className="btn btn-sm btn-danger" onClick={() => handleDeleteClient(client.id)}>
-                      Supprimer
+                    <button className="btn btn-sm btn-danger d-flex align-items-center" onClick={() => handleDeleteClient(client.id)}>
+                      <FaTrash size={14} />
+                      <span className="ms-1">Supprimer</span>
                     </button>
                   </td>
                 </tr>

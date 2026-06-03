@@ -7,7 +7,7 @@ import Badge from "../../components/Common/Badge";
 import LineChart from "../../components/Charts/LineChart";
 import { getLivreurStats, getMyDeliveries } from "../../services/userService";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
+import { FaTachometerAlt, FaBoxes, FaClock, FaCheckCircle, FaCalendarDay, FaChartLine, FaHourglassHalf, FaInbox, FaSpinner } from 'react-icons/fa';
 
 const Dashboard = () => {
   const { user, login } = useContext(AuthContext);
@@ -133,7 +133,7 @@ const Dashboard = () => {
         {/* Header */}
         <div style={{ marginBottom: "30px" }}>
           <h1 style={{ fontSize: "32px", fontWeight: "700", color: "#2c3e50", margin: 0 }}>
-            <i className="bi bi-speedometer2" style={{ marginRight: "12px" }}></i>
+            <FaTachometerAlt className="me-3" size={28} color="#3498db" />
             Tableau de bord
           </h1>
           <p style={{ color: "#7f8c8d", marginTop: "8px", marginBottom: 0 }}>
@@ -180,7 +180,7 @@ const Dashboard = () => {
                   justifyContent: "center",
                 }}
               >
-                <i className="bi bi-boxes" style={{ fontSize: "24px", color: "#3498db" }}></i>
+                <FaBoxes className="me-2" size={20} color="#3498db" />
               </div>
             </div>
           </div>
@@ -215,7 +215,7 @@ const Dashboard = () => {
                   justifyContent: "center",
                 }}
               >
-                <i className="bi bi-clock" style={{ fontSize: "24px", color: "#f39c12" }}></i>
+                <FaClock className="me-2" size={20} color="#f39c12" />
               </div>
             </div>
           </div>
@@ -250,7 +250,7 @@ const Dashboard = () => {
                   justifyContent: "center",
                 }}
               >
-                <i className="bi bi-check-circle" style={{ fontSize: "24px", color: "#27ae60" }}></i>
+                <FaCheckCircle className="me-2" size={20} color="#27ae60" />
               </div>
             </div>
           </div>
@@ -285,7 +285,7 @@ const Dashboard = () => {
                   justifyContent: "center",
                 }}
               >
-                <i className="bi bi-calendar-day" style={{ fontSize: "24px", color: "#9b59b6" }}></i>
+                <FaCalendarDay className="me-2" size={20} color="#9b59b6" />
               </div>
             </div>
           </div>
@@ -309,7 +309,7 @@ const Dashboard = () => {
             }}
           >
             <h5 style={{ fontSize: "16px", fontWeight: "600", color: "#2c3e50", marginBottom: "20px" }}>
-              <i className="bi bi-graph-up" style={{ marginRight: "8px" }}></i>
+              <FaChartLine className="me-2" size={16} color="#3498db" />
               Tendance des livraisons
             </h5>
             <LineChart data={chartData} />
@@ -326,15 +326,13 @@ const Dashboard = () => {
           }}
         >
           <h5 style={{ fontSize: "16px", fontWeight: "600", color: "#2c3e50", marginBottom: "20px" }}>
-            <i className="bi bi-hourglass-split" style={{ marginRight: "8px" }}></i>
+            <FaHourglassHalf className="me-2" size={16} color="#3498db" />
             Livraisons récentes
           </h5>
 
           {stats.loading || isLoading("dashboard") ? (
             <div style={{ textAlign: "center", padding: "40px 0" }}>
-              <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">Chargement...</span>
-              </div>
+              <FaSpinner className="spin" size={32} color="#3498db" />
             </div>
           ) : stats.deliveries.length === 0 ? (
             <div
@@ -345,7 +343,7 @@ const Dashboard = () => {
                 borderRadius: "8px",
               }}
             >
-              <i className="bi bi-inbox" style={{ fontSize: "32px", color: "#bdc3c7", marginBottom: "10px" }}></i>
+              <FaInbox size={32} color="#bdc3c7" style={{ marginBottom: "10px" }} />
               <p style={{ color: "#7f8c8d", marginTop: "10px" }}>Aucune livraison trouvée</p>
             </div>
           ) : (

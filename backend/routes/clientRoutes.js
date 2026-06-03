@@ -4,8 +4,9 @@ const clientController = require('../controllers/clientController');
 const authMiddleware = require('../middleware/authMiddleware');
 const roleMiddleware = require('../middleware/roleMiddleware');
 
-// Routes réservées à l'admin
 router.get('/', authMiddleware, roleMiddleware(['admin']), clientController.getAll);
-router.get('/:id', authMiddleware, roleMiddleware(['admin']), clientController.getById);
+router.get('/:id', authMiddleware, clientController.getById);
+router.put('/:id', authMiddleware, clientController.update);
+router.delete('/:id', authMiddleware, roleMiddleware(['admin']), clientController.remove);
 
 module.exports = router;

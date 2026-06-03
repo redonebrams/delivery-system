@@ -5,12 +5,20 @@ const responseFormatter = require('../utils/responseFormatter');
 
 exports.register = async (req, res, next) => {
   try {
-    const { email, password, nom, prenom, telephone, role } = req.body;
+    const { email, password, nom, prenom, telephone } = req.body;
+    const role = 'client';
 
-    // Hash du mot de passe
+    if (!email || !password || !nom || !prenom || !telephone) {
+      return res.status(400).json(responseFormatter(false, null, 'Tous les champs sont requis'));
+    }
+
+    const existingUser = await User.findByEmail(email);
+    if (existingUser) {
+      return res.status(400).json(responseFormatter(false, null, 'Email déjà utilisé'));
+    }
+
     const hash = await bcrypt.hash(password, 10);
 
-    // Création utilisateur
     const id = await User.create({
       email,
       password_hash: hash,

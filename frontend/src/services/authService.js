@@ -89,18 +89,9 @@ export const register = async (data) => {
 };
 
 export const logout = async () => {
-  // Clear local storage
   localStorage.removeItem("token");
   localStorage.removeItem("user");
   console.log("✅ User logged out - local storage cleared");
-  
-  // Optionally call backend if logout endpoint exists
-  try {
-    const response = await api.post("/auth/logout");
-    return response.data;
-  } catch (err) {
-    console.log("ℹ️ Logout endpoint not available (this is normal)");
-  }
 };
 
 export const getMe = async () => {

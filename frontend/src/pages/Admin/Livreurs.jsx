@@ -5,7 +5,8 @@ import {
   updateLivreur, 
   removeLivreur,
   getLivreurById,
-  getLivreurDeliveries
+  getLivreurDeliveries,
+  getLivreurStats
 } from "../../services/userService";
 import { useError } from "../../context/ErrorContext";
 import { useLoading } from "../../context/LoadingContext";
@@ -185,10 +186,10 @@ const Livreurs = () => {
     setSelectedLivreur(livreur);
     try {
       setLoading("stats", true);
-      const stats = await fetch(`/api/livreurs/${livreur.id}/stats`).then(r => r.json());
+      const stats = await getLivreurStats(livreur.id);
       const deliveries = await getLivreurDeliveries(livreur.id);
-      setLivreurStats(stats.data || stats);
-      setDeliveriesHistory(Array.isArray(deliveries?.data) ? deliveries.data : Array.isArray(deliveries) ? deliveries : []);
+      setLivreurStats(stats);
+      setDeliveriesHistory(Array.isArray(deliveries) ? deliveries : []);
     } catch (error) {
       handleApiError(error);
     } finally {

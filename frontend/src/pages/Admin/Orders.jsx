@@ -6,7 +6,7 @@ import { useError } from "../../context/ErrorContext";
 import { useLoading } from "../../context/LoadingContext";
 import AdminLayout from "../../components/Layout/AdminLayout";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
+import { FaFilter, FaChartLine, FaInbox, FaUserPlus, FaTrash, FaExclamationTriangle, FaSpinner } from 'react-icons/fa';
 
 const Orders = () => {
   const navigate = useNavigate();
@@ -105,7 +105,7 @@ const Orders = () => {
     return (
       <AdminLayout title="Gestion des Commandes">
         <div className="alert alert-danger" role="alert">
-          <i className="bi bi-exclamation-triangle me-2"></i>
+          <FaExclamationTriangle className="me-2" size={20} />
           {error}
         </div>
       </AdminLayout>
@@ -118,8 +118,8 @@ const Orders = () => {
       <div className="card rounded-4 border mb-4" style={{ borderColor: "#e2e8f0", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
         <div className="card-body p-4 d-flex justify-content-between align-items-center">
           <div>
-            <h6 className="fw-bold mb-1" style={{ color: "#1e293b" }}>
-              <i className="bi bi-filter me-2" style={{ color: "#2563eb" }}></i> Total Commandes
+            <h6 className="fw-bold mb-1 d-flex align-items-center" style={{ color: "#1e293b" }}>
+              <FaFilter className="me-2" size={16} color="#2563eb" /> Total Commandes
             </h6>
             <h2 className="fw-bold m-0" style={{ color: "#2563eb", fontSize: "2rem" }}>{orders.length}</h2>
           </div>
@@ -136,7 +136,7 @@ const Orders = () => {
               transition: "all 0.3s ease",
             }}
           >
-            <i className="bi bi-graph-up me-2"></i> Voir Dashboard
+            <FaChartLine className="me-2" size={16} /> Voir Dashboard
           </button>
         </div>
       </div>
@@ -144,12 +144,12 @@ const Orders = () => {
       {/* Orders Table */}
       {isLoading('ordersPage') ? (
         <div className="text-center py-5">
-          <div className="spinner-border text-primary" role="status"></div>
+          <FaSpinner className="spin" size={32} color="#3C5E82" />
           <p className="text-muted mt-3">Chargement des commandes...</p>
         </div>
       ) : orders.length === 0 ? (
         <div className="card rounded-4 border text-center py-5" style={{ borderColor: "#e2e8f0", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
-          <i className="bi bi-inbox" style={{ fontSize: "3rem", color: "#cbd5e1" }}></i>
+          <FaInbox size={48} color="#cbd5e1" />
           <p className="text-muted mt-3">Aucune commande trouvée</p>
         </div>
       ) : (
@@ -190,14 +190,14 @@ const Orders = () => {
                           <option value="annulee">Annulée</option>
                         </select>
                       </td>
-                      <td>{order.livreur ? `${order.livreur.name}` : <span className="text-danger">Non assigné</span>}</td>
+                      <td>{order.livreur_nom ? `${order.livreur_nom} ${order.livreur_prenom}` : <span className="text-danger">Non assigné</span>}</td>
                       <td>{order.prix_livraison || order.totalPrice ? `${order.prix_livraison || order.totalPrice} MAD` : '-'}</td>
                       <td>
-                        <button className="btn btn-sm btn-primary me-2" onClick={() => { setSelectedOrder(order); setShowAssignModal(true); setSelectedLivreur(''); }}>
-                          <i className="bi bi-person-plus"></i>
+                        <button className="btn btn-sm btn-primary me-2 d-flex align-items-center" onClick={() => { setSelectedOrder(order); setShowAssignModal(true); setSelectedLivreur(''); }}>
+                          <FaUserPlus size={14} />
                         </button>
-                        <button className="btn btn-sm btn-danger" onClick={() => handleDelete(order.id)} disabled={isLoading(`delete-${order.id}`)}>
-                          <i className="bi bi-trash"></i>
+                        <button className="btn btn-sm btn-danger d-flex align-items-center" onClick={() => handleDelete(order.id)} disabled={isLoading(`delete-${order.id}`)}>
+                          <FaTrash size={14} />
                         </button>
                       </td>
                     </tr>

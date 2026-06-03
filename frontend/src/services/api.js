@@ -5,6 +5,7 @@ const api = axios.create({
   timeout: 10000, // 10 second timeout
 });
 
+// REQUEST INTERCEPTOR: Add token and handle retries
 // 🔥 REQUEST INTERCEPTOR: Add token and handle retries
 api.interceptors.request.use(
   (config) => {

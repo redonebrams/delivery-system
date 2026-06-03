@@ -35,11 +35,10 @@ class Commande {
   static async getAll() {
     const [rows] = await pool.query(`
       SELECT c.*, u.nom as client_nom, u.prenom as client_prenom, u.email as client_email,
-             l.id as livreur_id, ul.nom as livreur_nom, ul.prenom as livreur_prenom
+             ul.nom as livreur_nom, ul.prenom as livreur_prenom, ul.email as livreur_email
       FROM commandes c
       LEFT JOIN users u ON c.client_id = u.id
-      LEFT JOIN livreurs l ON c.livreur_id = l.user_id
-      LEFT JOIN users ul ON l.user_id = ul.id
+      LEFT JOIN users ul ON c.livreur_id = ul.id
       ORDER BY c.created_at DESC
     `);
     return rows;

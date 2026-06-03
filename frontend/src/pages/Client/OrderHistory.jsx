@@ -1,39 +1,71 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getOrders } from "../../services/orderService";
 import ClientLayout from "../../components/Layout/ClientLayout";
+import { getOrders } from "../../services/orderService";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
+
+const statusOptions = [
+  { value: "tous", label: "Tous" },
+  { value: "en_attente", label: "En attente" },
+  { value: "assignee", label: "Assignée" },
+  { value: "en_retrait", label: "En retrait" },
+  { value: "recuperee", label: "Récupérée" },
+  { value: "livree", label: "Livrée" },
+  { value: "annulee", label: "Annulée" },
+];
+
+const typeOptions = [
+  { value: "tous", label: "Tous" },
+  { value: "restaurant", label: "Restaurant" },
+  { value: "pharmacie", label: "Pharmacie" },
+  { value: "colis", label: "Colis" },
+  { value: "courses", label: "Courses" },
+];
+
+const statusMeta = {
+  en_attente: { label: "En attente", color: "#f59e0b", bg: "rgba(245, 158, 11, 0.15)" },
+  assignee: { label: "Assignee", color: "#2563eb", bg: "rgba(37, 99, 235, 0.15)" },
+  en_retrait: { label: "En retrait", color: "#0ea5e9", bg: "rgba(14, 165, 233, 0.15)" },
+  recuperee: { label: "Recuperee", color: "#0ea5e9", bg: "rgba(14, 165, 233, 0.15)" },
+  livree: { label: "Livree", color: "#10b981", bg: "rgba(16, 185, 129, 0.15)" },
+  annulee: { label: "Annulee", color: "#ef4444", bg: "rgba(239, 68, 68, 0.15)" },
+};
+
+const normalizeStatus = (order) =>
+  String(order?.statut || order?.status || "en_attente")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, "_");
+
+const normalizeType = (orderType) =>
+  String(orderType || "")
+    .toLowerCase()
+    .trim();
 
 const OrderHistory = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
-  const [allOrders, setAllOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
+  const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
   const [filters, setFilters] = useState({
-    dateStart: '',
-    dateEnd: '',
-    status: 'Tous',
-    type: 'Tous',
-    search: ''
+    search: "",
+    status: "tous",
+    type: "tous",
+    dateStart: "",
+    dateEnd: "",
   });
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const ordersPerPage = 10;
+  const perPage = 10;
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         setLoading(true);
         const data = await getOrders();
-        if (Array.isArray(data)) {
-          setAllOrders(data);
-          setOrders(data);
-        } else {
-          setOrders([]);
-        }
+        setOrders(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error(err);
         setError("Impossible de charger l'historique des commandes.");
@@ -41,224 +73,163 @@ const OrderHistory = () => {
         setLoading(false);
       }
     };
+
     fetchOrders();
   }, []);
 
-  useEffect(() => {
-    filterOrders();
-  }, [filters, allOrders]);
+  const filteredOrders = useMemo(() => {
+    const search = filters.search.trim().toLowerCase();
+    return orders.filter((order) => {
+      const createdAt = order.created_at || order.createdAt;
+      const text = [
+        order.id,
+        order.type_commande || order.type,
+        order.adresse_retrait || order.pickupAddress,
+        order.adresse_livraison || order.deliveryAddress,
+      ].join(" ").toLowerCase();
 
-  const getStatusInfo = (status) => {
-    const map = {
-      "En attente": { color: "warning", icon: "bi-clock", text: "En attente" },
-      "Assignée": { color: "primary", icon: "bi-person-check", text: "Assignée" },
-      "En cours de retrait": { color: "orange", icon: "bi-box-seam", text: "En retrait" },
-      "En cours": { color: "info", icon: "bi-truck", text: "En livraison" },
-      "Livrée": { color: "success", icon: "bi-check-circle", text: "Livrée" },
-      "Annulée": { color: "danger", icon: "bi-x-circle", text: "Annulée" }
-    };
-    return map[status] || { color: "secondary", icon: "bi-question-circle", text: status };
-  };
-
-  const getTypeIcon = (type) => {
-    const map = {
-      "Restaurant": "bi-cup-hot",
-      "Pharmacie": "bi-capsule",
-      "Colis": "bi-box-seam",
-      "Courses": "bi-cart3"
-    };
-    return map[type] || "bi-box";
-  };
-
-  const filterOrders = () => {
-    let filtered = [...allOrders];
-
-    if (filters.dateStart)
-      filtered = filtered.filter(o => new Date(o.created_at || o.createdAt) >= new Date(filters.dateStart));
-    if (filters.dateEnd)
-      filtered = filtered.filter(o => new Date(o.created_at || o.createdAt) <= new Date(filters.dateEnd));
-    if (filters.status !== "Tous")
-      filtered = filtered.filter(o => o.status === filters.status);
-    if (filters.type !== "Tous")
-      filtered = filtered.filter(o => (o.type_commande || o.type) === filters.type);
-    if (filters.search) {
-      const s = filters.search.toLowerCase();
-      filtered = filtered.filter(o =>
-        o.id.toString().includes(s) ||
-        (o.adresse_retrait || o.pickupAddress || "").toLowerCase().includes(s) ||
-        (o.adresse_livraison || o.deliveryAddress || "").toLowerCase().includes(s)
-      );
-    }
-
-    setOrders(filtered);
-    setCurrentPage(1);
-  };
-
-  const resetFilters = () => {
-    setFilters({
-      dateStart: '',
-      dateEnd: '',
-      status: 'Tous',
-      type: 'Tous',
-      search: ''
+      if (filters.status !== "tous" && normalizeStatus(order) !== filters.status) return false;
+      if (filters.type !== "tous" && normalizeType(order.type_commande || order.type) !== filters.type) return false;
+      if (filters.dateStart && createdAt && new Date(createdAt) < new Date(filters.dateStart)) return false;
+      if (filters.dateEnd && createdAt) {
+        const endDate = new Date(filters.dateEnd);
+        endDate.setHours(23, 59, 59, 999);
+        if (new Date(createdAt) > endDate) return false;
+      }
+      if (search && !text.includes(search)) return false;
+      return true;
     });
-    setOrders(allOrders);
-    setCurrentPage(1);
+  }, [filters, orders]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / perPage));
+  const visibleOrders = filteredOrders.slice((page - 1) * perPage, page * perPage);
+
+  const updateFilter = (name, value) => {
+    setFilters((current) => ({ ...current, [name]: value }));
+    setPage(1);
   };
-
-  // Pagination
-  const indexOfLastOrder = currentPage * ordersPerPage;
-  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
-  const totalPages = Math.ceil(orders.length / ordersPerPage);
-
-  if (loading) {
-    return (
-      <ClientLayout title="Historique" subtitle="Chargement...">
-        <div className="text-center my-5">
-          <div className="spinner-border text-primary" role="status"></div>
-          <p className="mt-3 text-muted">Récupération de l'historique...</p>
-        </div>
-      </ClientLayout>
-    );
-  }
-
-  if (error) {
-    return (
-      <ClientLayout title="Erreur">
-        <div className="text-center py-5">
-          <i className="bi bi-exclamation-triangle text-danger fs-1 mb-3"></i>
-          <h4>Erreur</h4>
-          <p className="text-muted">{error}</p>
-          <button className="btn btn-primary" onClick={() => window.location.reload()}>
-            <i className="bi bi-arrow-clockwise me-2"></i>Réessayer
-          </button>
-        </div>
-      </ClientLayout>
-    );
-  }
 
   return (
-    <ClientLayout title="Historique des Commandes">
-      {/* Filters */}
-      <div className="card rounded-4 mb-5 p-4 shadow-sm">
-        <h5 className="mb-3 fw-bold"><i className="bi bi-funnel me-2 text-primary"></i>Filtres</h5>
-        <div className="row g-3">
-          <div className="col-md-3">
-            <label>Date de début</label>
-            <input type="date" className="form-control" value={filters.dateStart} onChange={e => setFilters({...filters, dateStart: e.target.value})} />
-          </div>
-          <div className="col-md-3">
-            <label>Date de fin</label>
-            <input type="date" className="form-control" value={filters.dateEnd} onChange={e => setFilters({...filters, dateEnd: e.target.value})} />
-          </div>
-          <div className="col-md-3">
-            <label>Statut</label>
-            <select className="form-select" value={filters.status} onChange={e => setFilters({...filters, status: e.target.value})}>
-              <option value="Tous">Tous</option>
-              <option value="En attente">En attente</option>
-              <option value="Assignée">Assignée</option>
-              <option value="En cours de retrait">En retrait</option>
-              <option value="En cours">En livraison</option>
-              <option value="Livrée">Livrée</option>
-              <option value="Annulée">Annulée</option>
-            </select>
-          </div>
-          <div className="col-md-3">
-            <label>Type</label>
-            <select className="form-select" value={filters.type} onChange={e => setFilters({...filters, type: e.target.value})}>
-              <option value="Tous">Tous</option>
-              <option value="Restaurant">Restaurant</option>
-              <option value="Pharmacie">Pharmacie</option>
-              <option value="Colis">Colis</option>
-              <option value="Courses">Courses</option>
-            </select>
-          </div>
-          <div className="col-md-6">
-            <label>Recherche</label>
-            <input type="text" className="form-control" placeholder="Numéro ou adresse..." value={filters.search} onChange={e => setFilters({...filters, search: e.target.value})} />
-          </div>
-          <div className="col-md-6 d-flex gap-2 align-items-end">
-            <button className="btn btn-primary flex-fill" onClick={filterOrders}>Filtrer</button>
-            <button className="btn btn-secondary flex-fill" onClick={resetFilters}>Réinitialiser</button>
-          </div>
-        </div>
-      </div>
-
-      {/* Table */}
-      {currentOrders.length === 0 ? (
+    <ClientLayout title="Historique des Commandes" subtitle="Consultez, filtrez et ouvrez vos commandes passees.">
+      {loading ? (
         <div className="text-center py-5">
-          <i className="bi bi-inbox fs-1 text-muted mb-3"></i>
-          <h5>Aucune commande trouvée</h5>
-          <p className="text-muted">Essayez de modifier vos filtres pour voir plus de résultats.</p>
+          <div className="spinner-border text-primary" role="status"></div>
+          <p className="text-muted mt-3">Recuperation de l'historique...</p>
+        </div>
+      ) : error ? (
+        <div className="alert alert-danger">
+          <i className="bi bi-exclamation-triangle me-2"></i>
+          {error}
         </div>
       ) : (
-        <div className="table-responsive mb-4">
-          <table className="table table-hover align-middle">
-            <thead className="table-light">
-              <tr>
-                <th>#Commande</th>
-                <th>Date</th>
-                <th>Type</th>
-                <th>Adresse</th>
-                <th>Prix</th>
-                <th>Statut</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentOrders.map(order => {
-                const statusInfo = getStatusInfo(order.status);
-                return (
-                  <tr key={order.id}>
-                    <td>#{order.id}</td>
-                    <td>{new Date(order.created_at || order.createdAt).toLocaleDateString("fr-FR")}</td>
-                    <td><i className={`bi ${getTypeIcon(order.type_commande || order.type)} me-1`}></i>{order.type_commande || order.type}</td>
-                    <td>
-                      <small>{(order.adresse_retrait || order.pickupAddress || "").substring(0,20)}...</small>
-                      <br/>
-                      <small>{(order.adresse_livraison || order.deliveryAddress || "").substring(0,20)}...</small>
-                    </td>
-                    <td>{order.prix_livraison || order.totalPrice} MAD</td>
-                    <td>
-                      <span className={`badge bg-${statusInfo.color}`}>
-                        <i className={`bi ${statusInfo.icon} me-1`}></i>{statusInfo.text}
-                      </span>
-                    </td>
-                    <td>
-                      <button className="btn btn-sm btn-outline-primary" onClick={() => navigate(`/client/orders/${order.id}`)}>
-                        <i className="bi bi-eye me-1"></i>Voir
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+        <>
+          <div className="client-card p-4 mb-4">
+            <h5 className="fw-bold mb-3" style={{ color: "#1e293b" }}>
+              <i className="bi bi-funnel me-2" style={{ color: "#2563eb" }}></i>
+              Filtres
+            </h5>
+            <div className="row g-3">
+              <div className="col-lg-3 col-md-6">
+                <label className="form-label">Recherche</label>
+                <input className="form-control" placeholder="Numero ou adresse..." value={filters.search} onChange={(e) => updateFilter("search", e.target.value)} />
+              </div>
+              <div className="col-lg-2 col-md-6">
+                <label className="form-label">Statut</label>
+                <select className="form-select" value={filters.status} onChange={(e) => updateFilter("status", e.target.value)}>
+                  {statusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                </select>
+              </div>
+              <div className="col-lg-2 col-md-6">
+                <label className="form-label">Type</label>
+                <select className="form-select" value={filters.type} onChange={(e) => updateFilter("type", e.target.value)}>
+                  {typeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-lg-2 col-md-6">
+                <label className="form-label">Debut</label>
+                <input type="date" className="form-control" value={filters.dateStart} onChange={(e) => updateFilter("dateStart", e.target.value)} />
+              </div>
+              <div className="col-lg-2 col-md-6">
+                <label className="form-label">Fin</label>
+                <input type="date" className="form-control" value={filters.dateEnd} onChange={(e) => updateFilter("dateEnd", e.target.value)} />
+              </div>
+              <div className="col-lg-1 col-md-6 d-flex align-items-end">
+                <button
+                  className="btn btn-outline-secondary w-100"
+                  type="button"
+                  onClick={() => {
+                    setFilters({ search: "", status: "tous", type: "tous", dateStart: "", dateEnd: "" });
+                    setPage(1);
+                  }}
+                >
+                  <i className="bi bi-arrow-counterclockwise"></i>
+                </button>
+              </div>
+            </div>
+          </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <nav className="d-flex justify-content-center">
-          <ul className="pagination">
-            <li className={`page-item ${currentPage === 1 && "disabled"}`}>
-              <button className="page-link" onClick={() => setCurrentPage(p => Math.max(p-1,1))}>
+          <div className="client-table-card">
+            {visibleOrders.length === 0 ? (
+              <div className="client-empty-state">
+                <i className="bi bi-inbox display-5 text-muted"></i>
+                <h5 className="mt-3" style={{ color: "#1e293b" }}>Aucune commande trouvee</h5>
+                <p className="mb-0">Modifiez les filtres pour afficher plus de resultats.</p>
+              </div>
+            ) : (
+              <div className="table-responsive">
+                <table className="table table-hover align-middle mb-0">
+                  <thead>
+                    <tr>
+                      <th>Commande</th>
+                      <th>Date</th>
+                      <th>Type</th>
+                      <th>Retrait</th>
+                      <th>Livraison</th>
+                      <th>Prix</th>
+                      <th>Statut</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visibleOrders.map((order) => {
+                      const meta = statusMeta[normalizeStatus(order)] || statusMeta.en_attente;
+                      return (
+                        <tr key={order.id}>
+                          <td className="fw-semibold">#{order.id}</td>
+                          <td>{order.created_at || order.createdAt ? new Date(order.created_at || order.createdAt).toLocaleDateString("fr-FR") : "-"}</td>
+                          <td>{order.type_commande || order.type || "-"}</td>
+                          <td>{order.adresse_retrait || order.pickupAddress || "-"}</td>
+                          <td>{order.adresse_livraison || order.deliveryAddress || "-"}</td>
+                          <td>{order.prix_livraison || order.totalPrice || 0} MAD</td>
+                          <td><span className="badge" style={{ background: meta.bg, color: meta.color }}>{meta.label}</span></td>
+                          <td>
+                            <button className="btn btn-sm btn-outline-primary" type="button" onClick={() => navigate(`/client/orders/${order.id}`)}>
+                              <i className="bi bi-eye"></i>
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="d-flex justify-content-center gap-2 mt-4">
+              <button className="btn btn-outline-secondary" disabled={page === 1} onClick={() => setPage((value) => Math.max(1, value - 1))}>
                 <i className="bi bi-chevron-left"></i>
               </button>
-            </li>
-            {[...Array(totalPages)].map((_, i) => (
-              <li key={i} className={`page-item ${currentPage === i+1 && "active"}`}>
-                <button className="page-link" onClick={() => setCurrentPage(i+1)}>{i+1}</button>
-              </li>
-            ))}
-            <li className={`page-item ${currentPage === totalPages && "disabled"}`}>
-              <button className="page-link" onClick={() => setCurrentPage(p => Math.min(p+1,totalPages))}>
+              <span className="btn btn-light disabled">{page} / {totalPages}</span>
+              <button className="btn btn-outline-secondary" disabled={page === totalPages} onClick={() => setPage((value) => Math.min(totalPages, value + 1))}>
                 <i className="bi bi-chevron-right"></i>
               </button>
-            </li>
-          </ul>
-        </nav>
+            </div>
+          )}
+        </>
       )}
     </ClientLayout>
   );
